@@ -5,68 +5,41 @@ using Base.Threads: @threads
 using Logging
 using Pipe: @pipe
 using MD5
-using TractorBeam
+using TractorBeam: Credentials, Command, TransferFile, TransferQueue
 
-const INPUT_DIR::String = ""
+const SOURCE_DIR::String = ""
 const FILE_EXTENSION::String = ""
 const HPC_DESTINATION::String = ""
 const FINAL_DESTINATION::String = ""
 
 """
 """
-struct Credentials
-    address::String, username::String, password::String
-end
-
-"""
-"""
-struct Command
-    in_path::String, out_path::String, config_path::String
-end
-
-"""
-"""
-mutable struct ResultFile
-    relative_path::String,
-    dest_path::String,
-    origin_hash::String,
-    return_hash::String
-end
-
-
-"""
-"""
-mutable struct TransferQueue
-    member_count::Int,
-    remaining::Int
-end
-
-
-"""
-"""
-function parse_commandline()
+function parse_command_line_args()
     arg_settings = ArgParseSettings()
 
     @add_arg_table arg_settings begin
         "--source_dir", "-s"
-        help = "an option with an argument"
+        help = "The source directory full of input data to be transferred."
         arg_type = String
         default = "."
+
         "--destination", "-d"
-        help = "another option with an argument"
+        help = "The destination directory where the results files should be placed."
         arg_type = String
-        default = 0
+
         "--config", "-c"
         help = "an option without argument, i.e. a flag"
+        arg_type = String
+        default = "tractorbeam.yaml"
+
+        """
+        --gui
+        """
+        help = "whether to run in the browser through a GUI instead of through the cli"
         action = :store_true
-        """
-        arg1
-        """
-        help = "a positional argument"
-        required = true
     end
 
-    return parse_args(s)
+    return parse_args(arg_settings)
 end
 
 """
