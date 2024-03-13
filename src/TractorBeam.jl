@@ -15,7 +15,8 @@ export Credentials,
     interpolate_remote,
     parse_config,
     run_transfer,
-    oversee_transfers
+    oversee_transfers,
+    run_hpc_command
 
 """
 """
@@ -121,5 +122,16 @@ function oversee_transfers(
     end
 end
 precompile(oversee_transfers, (TransferQueue, Bool))
+
+"""
+"""
+function run_hpc_command(command::String, creds::Credentials)
+    # put together details for ssh
+    ssh_details = "$(creds.username)@$(creds.address)"
+
+    # run the command on the remote host
+    return run(`ssh $ssh_details 'cd $(creds.remote_dir) && $command'`)
+end
+precompile(run_hpc_command, (String, Credentials))
 
 end # module TractorBeam

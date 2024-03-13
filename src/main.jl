@@ -84,17 +84,6 @@ precompile(transfer_to_hpc, (TransferFile, Credentials))
 
 """
 """
-function run_hpc_command(command::String, creds::Credentials)
-    # put together details for ssh
-    ssh_details = "$(creds.username)@$(creds.address):$(creds.remote_dir)"
-
-    # run the command on the remote host
-    return run(`ssh $ssh_details $command`)
-end
-precompile(run_hpc_command, (String, Credentials))
-
-"""
-"""
 function catalog_result_files() end
 precompile(catalog_result_files, ())
 
