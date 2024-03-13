@@ -1,6 +1,12 @@
 .vscode/
+.ssh/
 
 Manifest.toml
+*_rsa*
+authorized_keys
+*.pub
 
 ._*
 .DS_Store
+tractorbeam.yml
+tractorbeam.yaml

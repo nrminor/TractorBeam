@@ -4,8 +4,10 @@ using ArgParse
 using Base.Threads: @threads
 using Logging
 using Pipe: @pipe
+using ResultTypes: @try
 using MD5
-using TractorBeam: Credentials, Command, TransferFile, TransferQueue
+using YAML
+using TractorBeam
 
 # dev imports
 using Revise
@@ -49,18 +51,6 @@ precompile(parse_command_line_args, ())
 
 """
 """
-function interpolate_remote(
-    username::String,
-    address::String,
-    remote_dir::String,
-    file_path::String,
-)
-    return "$(username)@$(address):$(remote_dir)/$(file_path)"
-end
-precompile(interpolate_remote, (String, String, String, String))
-
-"""
-"""
 function transfer_to_hpc(input_file::TransferFile, credentials::Credentials)
     @info "Now transferring $input_file to destination."
 
@@ -75,10 +65,8 @@ function transfer_to_hpc(input_file::TransferFile, credentials::Credentials)
         input_file.dest_path,
     )
 
-    # handle credentials
-
     # run the transfer asynchronously with rsync
-    run(`rsync -aq $(source_path) $(destination)`; wait = false)
+    @try run_transfer(source_path, destination)
 
     # hash the original and destination files. The origin hash will take
     # place while the transfer finishes
@@ -96,15 +84,24 @@ precompile(transfer_to_hpc, (TransferFile, Credentials))
 
 """
 """
-function run_hpc_command() end
-precompile(run_hpc_command, ())
+function run_hpc_command(command::String, creds::Credentials)
+    # put together details for ssh
+    ssh_details = "$(creds.username)@$(creds.address):$(creds.remote_dir)"
+
+    # run the command on the remote host
+    return run(`ssh $ssh_details $command`)
+end
+precompile(run_hpc_command, (String, Credentials))
+
+"""
+"""
+function catalog_result_files() end
+precompile(catalog_result_files, ())
 
 """
 """
 function transfer_from_hpc(result_file::TransferFile, credentials::Credentials)
-    @info "Now transferring $result_file to destination."
-
-    @assert isfile(result_file.relative_path) "Input file path does not point to a file path that exists:\n$result_file.relative_path"
+    @info "Now transferring $(result_file.relative_path) to destination."
 
     # pull out the source path and interpolate the destination
     source_path = interpolate_remote(
@@ -113,12 +110,10 @@ function transfer_from_hpc(result_file::TransferFile, credentials::Credentials)
         remote_dir,
         result_file.relative_path,
     )
-    destination = result_file.relative_path
-
-    # handle credentials
+    destination = result_file.dest_path
 
     # run the transfer asynchronously with rsync
-    run(`rsync -aq $(source_path) $(destination)`; wait = false)
+    @try run_transfer(source_path, destination)
 
     # hash the original and destination files. The origin hash will take
     # place while the transfer finishes
@@ -132,34 +127,36 @@ function transfer_from_hpc(result_file::TransferFile, credentials::Credentials)
 
     return
 end
-precompile(transfer_from_hpc, (TransferFile, Credentials,))
+precompile(transfer_from_hpc, (TransferFile, Credentials))
 
 """
 """
-function oversee_transfers(
-    queue::TransferQueue,
-    creds::Credentials,
-    to_or::Bool,
-)
-    # print a warning if running on a single thread
-    if Threads.nthreads() < 2
-        @warn "TractorBeam appears to be running on a single thread, meaning that only one file can be transferred at a time. Performance may be slow."
-    end
+function main()
+    # parse command line args
+    arg_dict = @try parse_command_line_args()
 
-    # run as many transfers as there are CPU cores available to the Julia runtime
-    @threads for file in queue.files
-        if to_or
-            transfer_to_hpc(file, creds)
-            continue
-        end
-        transfer_from_hpc(file, creds)
-    end
+    # attempt to generate static config from Pkl file
+    yaml_name = @try generate_config(arg_dict["config"])
+
+    # parse config
+    return credentials, command = @try parse_config(yaml_name)
+
+    # catalog local files to be sent
+    # queue = 
+
+    # run the transfer onto the remote host
+    # @try oversee_transfers(queue, credentials, true)
+
+    # once the transfer has completed, run the command
+    # @try run_hpc_command(command, credentials)
+
+    # catalog the results files to be transferred
+    # results_queue = @try catalog_result_files()
+
+    # bring 'em home
+    # @try oversee_transfers(results_queue, credentials, false)
+
 end
-precompile(oversee_transfers, (TransferQueue, Bool))
-
-"""
-"""
-function main() end
 precompile(main, ())
 
 # main()

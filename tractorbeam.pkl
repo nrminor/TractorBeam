@@ -1,0 +1,37 @@
+// remote destination address, working directory, and username
+address = ""
+remote_dir = "~/example"
+results_dir_name = "results"
+username = ""
+
+// Command inputs
+input_files {
+    input_samplesheet = ""
+    data_dir = ""
+    config_file = ""
+    bed_file = ""
+}
+
+// Command settings
+input_settings {
+    remote_output_dir = "\(remote_dir)/\(results_dir_name)/"
+    primer_left_suffix = "_LEFT"
+    primer_right_suffix = "_RIGHT"
+}
+
+// command template to be filled in with the above
+command = """
+nextflow run main.nf \\
+-config \(input_files.config_file) \\
+-profile singularity \\
+--input \(input_files.input_samplesheet) \\
+--outdir \(input_settings.remote_output_dir) \\
+--platform illumina \\
+--protocol amplicon \\
+--genome 'MN908947.3' \\
+--primer_bed \(input_files.bed_file) \\
+--primer_left_suffix \(input_settings.primer_left_suffix) \\
+--primer_right_suffix \(input_settings.primer_right_suffix) \\
+--skip_assembly \\
+-resume
+"""
