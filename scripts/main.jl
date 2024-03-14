@@ -16,16 +16,19 @@ import TractorBeam as TB
 Parse command-line arguments for a project that involves transferring a hierarchy of files to a remote cluster, executing a configurable command there, and then transferring a hierarchy of results files back to the local machine.
 
 ### Arguments
-- None
+
+  - None
 
 ### Returns
-- `ArgParse`: A structure containing the parsed command-line arguments.
+
+  - `ArgParse`: A structure containing the parsed command-line arguments.
 
 ### Options
-- `--source_dir`, `-s`: The source directory full of input data to be transferred. Defaults to `"input"`.
-- `--destination`, `-d`: The destination directory where the results files should be placed. Defaults to `"results"`.
-- `--config`, `-c`: Specifies the configuration file to use. Defaults to `"tractorbeam.pkl"`.
-- `--gui`, `-g`: Enable running in the browser through a GUI instead of the CLI. This is a flag; it does not require a value.
+
+  - `--source_dir`, `-s`: The source directory full of input data to be transferred. Defaults to `"input"`.
+  - `--destination`, `-d`: The destination directory where the results files should be placed. Defaults to `"results"`.
+  - `--config`, `-c`: Specifies the configuration file to use. Defaults to `"tractorbeam.pkl"`.
+  - `--gui`, `-g`: Enable running in the browser through a GUI instead of the CLI. This is a flag; it does not require a value.
 
 ### Examples
 
@@ -70,19 +73,22 @@ precompile(parse_command_line_args, ())
 The main function orchestrates the workflow of transferring a hierarchy of files to a remote cluster, executing a highly configurable command there, and then transferring a hierarchy of results files back to the local machine. This function leverages command-line arguments to control its behavior, including the option to launch a GUI for interaction.
 
 ### Workflow
-1. **Command-Line Argument Parsing**: If arguments are provided, the function parses them to configure the operation. If no arguments are found, the script exits.
-2. **GUI Launch**: If the `--gui` flag is set, the function logs an informational message and exits, indicating that GUI functionalities are yet to be implemented.
-3. **Configuration Generation and Parsing**: Generates a static configuration from a `.pkl` file and parses this configuration to obtain necessary details like credentials, directory paths, and the command to execute on the remote cluster.
-4. **File Transfer to Remote Cluster**: Catalogs local files to be sent and oversees their transfer to the remote cluster.
-5. **Remote Command Execution**: Executes the specified command on the remote cluster using the provided credentials.
-6. **Results Transfer Back to Local Machine**: Catalogs the result files on the remote cluster and oversees their transfer back to the local machine.
+
+ 1. **Command-Line Argument Parsing**: If arguments are provided, the function parses them to configure the operation. If no arguments are found, the script exits.
+ 2. **GUI Launch**: If the `--gui` flag is set, the function logs an informational message and exits, indicating that GUI functionalities are yet to be implemented.
+ 3. **Configuration Generation and Parsing**: Generates a static configuration from a `.pkl` file and parses this configuration to obtain necessary details like credentials, directory paths, and the command to execute on the remote cluster.
+ 4. **File Transfer to Remote Cluster**: Catalogs local files to be sent and oversees their transfer to the remote cluster.
+ 5. **Remote Command Execution**: Executes the specified command on the remote cluster using the provided credentials.
+ 6. **Results Transfer Back to Local Machine**: Catalogs the result files on the remote cluster and oversees their transfer back to the local machine.
 
 ### Command-Line Arguments
+
 The function supports several command-line arguments to configure its operation, parsed by `parse_command_line_args`. These include:
-- `--source_dir`, `-s`: Specifies the source directory of input data.
-- `--destination`, `-d`: Specifies the destination directory for result files.
-- `--config`, `-c`: Specifies the path to the configuration file.
-- `--gui`, `-g`: If present, indicates that the operation should proceed through a GUI rather than the CLI.
+
+  - `--source_dir`, `-s`: Specifies the source directory of input data.
+  - `--destination`, `-d`: Specifies the destination directory for result files.
+  - `--config`, `-c`: Specifies the path to the configuration file.
+  - `--gui`, `-g`: If present, indicates that the operation should proceed through a GUI rather than the CLI.
 
 ### Examples
 
@@ -90,7 +96,7 @@ Running with command-line arguments:
 
 ```sh
 julia scripts/main.jl -s path/to/source -d path/to/destination -c config.pkl
-````
+```
 """
 function main()
 
