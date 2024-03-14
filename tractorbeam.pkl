@@ -1,10 +1,11 @@
-// remote destination address, working directory, and username
+// remote destination username, address, and working directory 
+username = ""
 address = ""
 remote_dir = "~/example"
 results_dir_name = "results"
-username = ""
 
 // Command inputs
+inputs_to_transfer = "input/"
 input_files {
     input_samplesheet = ""
     data_dir = ""
