@@ -1,6 +1,7 @@
 module TractorBeam
 
 using ArgParse
+using Base.Iterators
 using Base.Threads: @threads
 using Logging
 using Pipe: @pipe
@@ -14,9 +15,10 @@ export Credentials,
     generate_config,
     interpolate_remote,
     parse_config,
-    run_transfer,
+    make_local_file_queue,
     oversee_transfers,
-    run_hpc_command
+    run_remote_command,
+    make_result_file_queue
 
 """
 """
@@ -70,12 +72,11 @@ precompile(generate_config, (String,))
 function interpolate_remote(
     username::String,
     address::String,
-    remote_dir::String,
     file_path::String,
 )
-    return "$(username)@$(address):$(remote_dir)/$(file_path)"
+    return "$(username)@$(address):$(file_path)"
 end
-precompile(interpolate_remote, (String, String, String, String))
+precompile(interpolate_remote, (String, String, String))
 
 
 """
@@ -88,9 +89,9 @@ function parse_config(yaml_name::String)
     credentials = Credentials(
         config_dict["address"],
         config_dict["username"],
-        config_dict["remote_dir"],
+        config_dict["remote_working_dir"],
     )
-    results_dir = config_dict["results_dir_name"]
+    results_dir = config_dict["local_results_dir"]
     local_dir = config_dict["inputs_to_transfer"]
     command = config_dict["command"]
 
@@ -116,12 +117,7 @@ function make_local_file_queue(
               x ->
                   !contains(x, ".DS_Store") & isfile(x) & !startswith(x, "._"),
               _,
-          ) |>
-          replace.(_, dir_to_send => "")
-
-    # use string interpolation in a comprehension to generate the output file
-    # paths that will be created with rsync on the remote host
-    dest_paths = @pipe rel_paths |> map(x -> "$remote_dir/$x", _) |> collect
+          )
 
     # TODO
     # generate hashes for all the files to be transferred
@@ -129,8 +125,8 @@ function make_local_file_queue(
     # create a vector of TransferFile instances that will themselves be
     # contained in an instance of the TransferQueue struct
     transfer_files = [
-        TransferFile(source_path, dest_path, "", "") for
-        (source_path, dest_path) in zip(rel_paths, dest_paths)
+        TransferFile(source_path, remote_dir, "", "") for
+        source_path in rel_paths
     ]
 
     # return the TransferQueue
@@ -146,41 +142,33 @@ precompile(make_local_file_queue, (String, String))
 
 """
 """
-function run_transfer(source_path::String, destination::String)
-    run(`rsync -aqzR $(source_path) $(destination)`; wait = false)
-    return
-end
-precompile(run_transfer, (String, String))
-
-
-"""
-"""
 function transfer_to_remote(input_file::TransferFile, credentials::Credentials)
-    @info "Now using thread $(Threads.threadid()) transferring $input_file to destination."
+    @info "Now using thread $(Threads.threadid()) to transfer $(basename(input_file.source_path)) to destination."
 
-    @assert isfile(input_file.source_path) "Input file path does not point to a file path that exists:\n$(input_file.source_path)"
+    @assert isfile(input_file.source_path) """
+    Input file path does not point to a file path that exists:\n$(input_file.source_path)
+    """
 
     # pull out the source path and interpolate the destination
     source_path = input_file.source_path
     destination = interpolate_remote(
         credentials.username,
         credentials.address,
-        remote_dir,
         input_file.dest_path,
     )
 
     # run the transfer asynchronously with rsync
-    run_transfer(source_path, destination)
+    run(`rsync -aqzR $source_path $destination`)
 
     # TODO:
     # hash the original and destination files. The origin hash will take
     # place while the transfer finishes
-    result_file.origin_hash = open(MD5.md5, source_path) |> bytes2hex
-    # result_file.destination_hash = open(MD5.md5, destination) |> bytes2hex
+    input_file.origin_hash = open(MD5.md5, source_path) |> bytes2hex
+    # input_file.destination_hash = open(MD5.md5, destination) |> bytes2hex
 
     # TODO:
     # log a non-fatal error if the transfer fails according to hashes
-    # if result_file.origin_hash != result_file.destination_hash
+    # if input_file.origin_hash != input_file.destination_hash
     #     @error "$destination failed to transfer successfully and may be corrupted or absent on the remote destination."
     # end
 
@@ -201,17 +189,17 @@ function oversee_transfers(
     end
 
     # run as many transfers as there are CPU cores available to the Julia runtime
-    @threads for (i, file) in enumerate(queue.files)
+    @threads for file in queue.files
         if to_or
-            transfer_to_hpc(file, creds)
-            continue
+            transfer_to_remote(file, creds)
+        else
+            transfer_from_remote(file)
         end
 
-        transfer_from_hpc(file, creds)
-
+        # TODO
         # this will probably cause a data race but oh well
-        queue.remaining = queue.member_count - i
-        queue.progress = queue.remaining / queue.member_count
+        # queue.remaining = queue.member_count - i
+        # queue.progress = queue.remaining / queue.member_count
     end
 end
 precompile(oversee_transfers, (TransferQueue, Bool))
@@ -219,14 +207,14 @@ precompile(oversee_transfers, (TransferQueue, Bool))
 
 """
 """
-function run_hpc_command(command::String, creds::Credentials)
+function run_remote_command(command::String, creds::Credentials)
     # put together details for ssh
     ssh_details = "$(creds.username)@$(creds.address)"
 
     # run the command on the remote host
-    return run(`ssh $ssh_details 'cd $(creds.remote_dir) && $command'`)
+    return run(`ssh $ssh_details cd $(creds.remote_dir) \&\& $command`)
 end
-precompile(run_hpc_command, (String, Credentials))
+precompile(run_remote_command, (String, Credentials))
 
 
 """
@@ -243,7 +231,7 @@ function make_result_file_queue(
 
     # lazily generate the the list of relative paths to be transferred back
     bring_em_home = @pipe read(
-              `ssh $host 'cd $remote_results_dir && find . -type f'`,
+              `ssh $host cd $remote_results_dir \&\& find . -type f`,
               String,
           ) |>
           split(_, '\n') |>
@@ -259,11 +247,13 @@ function make_result_file_queue(
 
     # fill in the local output directory information so we know where
     # the files will eventually end up
-    dest_paths =
-        @pipe bring_em_home |> map(x -> "$local_results_dir/$x", _) |> collect
+    dest_paths = @pipe bring_em_home |>
+          map(x -> "$local_results_dir/$x", _) |>
+          collect |>
+          dirname.(_) |>
+          map(x -> "$x/", _)
 
-    # TODO
-    # generate hashes for all the files to be transferred
+    # TODO generate hashes for all the files to be transferred
 
     # create a vector of TransferFile instances that will themselves be
     # contained in an instance of the TransferQueue struct
@@ -285,23 +275,12 @@ precompile(make_result_file_queue, (String, String))
 
 """
 """
-function transfer_from_remote(
-    result_file::TransferFile,
-    credentials::Credentials,
-)
-    @info "Now transferring $(result_file.source_path) to destination."
+function transfer_from_remote(result_file::TransferFile)
+    @info "Now transferring $(basename(result_file.source_path)) back to local destination on thread $(Threads.threadid())."
 
-    # pull out the source path and interpolate the destination
-    source_path = interpolate_remote(
-        credentials.username,
-        credentials.address,
-        remote_dir,
-        result_file.source_path,
-    )
-    destination = result_file.dest_path
-
-    # run the transfer asynchronously with rsync
-    run_transfer(source_path, destination)
+    # run the transfer with rsync
+    run(`mkdir -p $(result_file.dest_path)`)
+    run(`rsync -aqz $(result_file.source_path) $(result_file.dest_path)`)
 
     # TODO:
     # hash the original and destination files. The origin hash will take
@@ -317,7 +296,7 @@ function transfer_from_remote(
 
     return
 end
-precompile(transfer_from_remote, (TransferFile, Credentials))
+precompile(transfer_from_remote, (TransferFile,))
 
 
 end # module TractorBeam

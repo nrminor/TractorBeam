@@ -1,11 +1,12 @@
 // remote destination username, address, and working directory 
 username = ""
 address = ""
-remote_dir = "~/example"
-results_dir_name = "results"
+remote_working_dir = "~/example"
+remote_results_dir = "results"
+local_results_dir = "results"
 
 // Command inputs
-inputs_to_transfer = "input/"
+inputs_to_transfer = "input"
 input_files {
     input_samplesheet = ""
     data_dir = ""
@@ -15,7 +16,6 @@ input_files {
 
 // Command settings
 input_settings {
-    remote_output_dir = "\(remote_dir)/\(results_dir_name)/"
     primer_left_suffix = "_LEFT"
     primer_right_suffix = "_RIGHT"
 }
@@ -26,7 +26,7 @@ nextflow run main.nf \\
 -config \(input_files.config_file) \\
 -profile singularity \\
 --input \(input_files.input_samplesheet) \\
---outdir \(input_settings.remote_output_dir) \\
+--outdir \(remote_results_dir) \\
 --platform illumina \\
 --protocol amplicon \\
 --genome 'MN908947.3' \\
