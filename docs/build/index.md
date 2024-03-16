@@ -5,10 +5,24 @@
 
 # TractorBeam Documentation
 
+
+An unidentified flying infrastructure that beams files up, analyzes them, and then drops them back down.
+
 - [TractorBeam Documentation](index.md#TractorBeam-Documentation)
+    - [Overview](index.md#Overview)
     - [API Reference](index.md#API-Reference)
         - [Composite Types](index.md#Composite-Types)
         - [Functions](index.md#Functions)
+
+
+<a id='Overview'></a>
+
+<a id='Overview-1'></a>
+
+## Overview
+
+
+TractorBeam is an infrastructure for transferring files onto an HPC cluster (or any remote location), running a configurable command on them, and transferring the results back. It is available via a command line interface or (soon!) through a Pluto-based GUI that can be served and interacted with in a browser. TractorBeam makes running a complicated setup process like, for example, configuring and running [nf-core/viralrecon](https://nf-co.re/viralrecon) (its original use case) on a Slurm-based HPC cluster simple. It comes with [complete documentation](docs/build/index.md), unit-testing, and GitHub workflows to make sure everything is in working order and ready to run on your machine.
 
 
 <a id='API-Reference'></a>
@@ -54,7 +68,7 @@ host. This directory is the root for any file transfer operations and may also s
 The `Credentials` struct is intended to be instantiated with the required fields and passed to functions or methods that require access to the remote host. It centralizes the authentication details and remote directory information, facilitating easier management of remote operations throughout the project.
 
 
-<a target='_blank' href='https://github.com/nrminor/TractorBeam/blob/8b05e8089e01cc361e863c81b2b4ac3ce3bce5dd/src/TractorBeam.jl#L24-L50' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/nrminor/TractorBeam/blob/8ba9c1e028ff2ddf6bb5b2c6621be7293bbdd076/src/TractorBeam.jl#L24-L50' class='documenter-source'>source</a><br>
 
 <a id='TractorBeam.TransferFile' href='#TractorBeam.TransferFile'>#</a>
 **`TractorBeam.TransferFile`** &mdash; *Type*.
@@ -92,7 +106,7 @@ Instances of `TransferFile` are used to manage and verify file transfers  betwee
 This struct is mutable, allowing for the `destination_hash` to be updated after the file transfer is complete, facilitating a comparison between `origin_hash` and `destination_hash` to confirm the integrity of the transferred file.
 
 
-<a target='_blank' href='https://github.com/nrminor/TractorBeam/blob/8b05e8089e01cc361e863c81b2b4ac3ce3bce5dd/src/TractorBeam.jl#L58-L92' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/nrminor/TractorBeam/blob/8ba9c1e028ff2ddf6bb5b2c6621be7293bbdd076/src/TractorBeam.jl#L58-L92' class='documenter-source'>source</a><br>
 
 <a id='TractorBeam.TransferQueue' href='#TractorBeam.TransferQueue'>#</a>
 **`TractorBeam.TransferQueue`** &mdash; *Type*.
@@ -142,7 +156,7 @@ queue = TransferQueue(     [TransferFile("src1", "dest1", "hash1", ""),     Tran
 queue.remaining -= 1 queue.progress = (queue.member*count - queue.remaining) / queue.member*count ````
 
 
-<a target='_blank' href='https://github.com/nrminor/TractorBeam/blob/8b05e8089e01cc361e863c81b2b4ac3ce3bce5dd/src/TractorBeam.jl#L101-L147' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/nrminor/TractorBeam/blob/8ba9c1e028ff2ddf6bb5b2c6621be7293bbdd076/src/TractorBeam.jl#L101-L147' class='documenter-source'>source</a><br>
 
 
 <a id='Functions'></a>
@@ -194,7 +208,7 @@ yaml_config = generate_config("path/to/config.pkl")
 ```
 
 
-<a target='_blank' href='https://github.com/nrminor/TractorBeam/blob/8b05e8089e01cc361e863c81b2b4ac3ce3bce5dd/src/TractorBeam.jl#L156-L189' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/nrminor/TractorBeam/blob/8ba9c1e028ff2ddf6bb5b2c6621be7293bbdd076/src/TractorBeam.jl#L156-L189' class='documenter-source'>source</a><br>
 
 <a id='TractorBeam.interpolate_remote' href='#TractorBeam.interpolate_remote'>#</a>
 **`TractorBeam.interpolate_remote`** &mdash; *Function*.
@@ -234,7 +248,7 @@ as an identifier for remote files in commands that support remote operations, su
 **remote_path will be "user123@example.com:/home/user123/data.txt"**
 
 
-<a target='_blank' href='https://github.com/nrminor/TractorBeam/blob/8b05e8089e01cc361e863c81b2b4ac3ce3bce5dd/src/TractorBeam.jl#L205-L230' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/nrminor/TractorBeam/blob/8ba9c1e028ff2ddf6bb5b2c6621be7293bbdd076/src/TractorBeam.jl#L205-L230' class='documenter-source'>source</a><br>
 
 <a id='TractorBeam.parse_config' href='#TractorBeam.parse_config'>#</a>
 **`TractorBeam.parse_config`** &mdash; *Function*.
@@ -293,7 +307,7 @@ credentials, local_dir, results_dir, command = parse_config("config.yml")
 ```
 
 
-<a target='_blank' href='https://github.com/nrminor/TractorBeam/blob/8b05e8089e01cc361e863c81b2b4ac3ce3bce5dd/src/TractorBeam.jl#L241-L277' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/nrminor/TractorBeam/blob/8ba9c1e028ff2ddf6bb5b2c6621be7293bbdd076/src/TractorBeam.jl#L241-L277' class='documenter-source'>source</a><br>
 
 <a id='TractorBeam.make_local_file_queue' href='#TractorBeam.make_local_file_queue'>#</a>
 **`TractorBeam.make_local_file_queue`** &mdash; *Function*.
@@ -341,7 +355,7 @@ is created with the source path set to the file's relative path and the destinat
 `TransferQueue`, which also records the total number of files and initializes progress to `0.0`.
 
 
-<a target='_blank' href='https://github.com/nrminor/TractorBeam/blob/8b05e8089e01cc361e863c81b2b4ac3ce3bce5dd/src/TractorBeam.jl#L297-L332' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/nrminor/TractorBeam/blob/8ba9c1e028ff2ddf6bb5b2c6621be7293bbdd076/src/TractorBeam.jl#L297-L332' class='documenter-source'>source</a><br>
 
 <a id='TractorBeam.oversee_transfers' href='#TractorBeam.oversee_transfers'>#</a>
 **`TractorBeam.oversee_transfers`** &mdash; *Function*.
@@ -383,7 +397,7 @@ leveraging Julia's `@threads` macro to distribute the transfer tasks across avai
 whether to invoke `transfer_to_remote` or `transfer_from_remote` for each file in the `queue`.
 
 
-<a target='_blank' href='https://github.com/nrminor/TractorBeam/blob/8b05e8089e01cc361e863c81b2b4ac3ce3bce5dd/src/TractorBeam.jl#L441-L471' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/nrminor/TractorBeam/blob/8ba9c1e028ff2ddf6bb5b2c6621be7293bbdd076/src/TractorBeam.jl#L441-L471' class='documenter-source'>source</a><br>
 
 <a id='TractorBeam.run_remote_command' href='#TractorBeam.run_remote_command'>#</a>
 **`TractorBeam.run_remote_command`** &mdash; *Function*.
@@ -441,7 +455,7 @@ and does not inherently provide features like output parsing or error handling. 
 The execution context (e.g., environment variables) of the remote command will be that of the default shell initialized by SSH, which may differ from the context of an interactive login shell.
 
 
-<a target='_blank' href='https://github.com/nrminor/TractorBeam/blob/8b05e8089e01cc361e863c81b2b4ac3ce3bce5dd/src/TractorBeam.jl#L502-L548' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/nrminor/TractorBeam/blob/8ba9c1e028ff2ddf6bb5b2c6621be7293bbdd076/src/TractorBeam.jl#L502-L548' class='documenter-source'>source</a><br>
 
 <a id='TractorBeam.make_result_file_queue' href='#TractorBeam.make_result_file_queue'>#</a>
 **`TractorBeam.make_result_file_queue`** &mdash; *Function*.
@@ -523,5 +537,5 @@ the local machine and the remote host.
 which is crucial for validating the integrity of transferred data.`
 
 
-<a target='_blank' href='https://github.com/nrminor/TractorBeam/blob/8b05e8089e01cc361e863c81b2b4ac3ce3bce5dd/src/TractorBeam.jl#L559-L617' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/nrminor/TractorBeam/blob/8ba9c1e028ff2ddf6bb5b2c6621be7293bbdd076/src/TractorBeam.jl#L559-L617' class='documenter-source'>source</a><br>
 
