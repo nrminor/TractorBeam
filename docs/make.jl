@@ -1,7 +1,7 @@
 #!/usr/bin/env -S julia --threads auto --gcthreads=3 --compile=all --optimize=3
 
 push!(LOAD_PATH,"../src/")
-using AbbreviatedStackTraces, Documenter, DocumenterMarkdown, TractorBeam
+using Documenter, DocumenterMarkdown, TractorBeam
 
 # render HTML docs that can be hosted
 # makedocs(sitename="TractorBeam Documentation")

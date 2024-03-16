@@ -4,7 +4,6 @@ using Pkg
 Pkg.activate(".")
 Pkg.precompile()
 
-using AbbreviatedStackTraces
 using ArgParse
 using Logging
 using MD5

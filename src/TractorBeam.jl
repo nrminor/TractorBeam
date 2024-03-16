@@ -2,12 +2,12 @@
 
 module TractorBeam
 
-using AbbreviatedStackTraces
 using Base.Iterators
 using Base.Threads: @threads
 using Logging
-using Pipe: @pipe
 using MD5
+using Pipe: @pipe
+using ProgressMeter
 using YAML
 
 
@@ -92,8 +92,8 @@ the file transfer is complete, facilitating a comparison between `origin_hash`
 and `destination_hash` to confirm the integrity of the transferred file.
 """
 mutable struct TransferFile
-    source_path::String
-    dest_path::String
+    const source_path::String
+    const dest_path::String
     origin_hash::String
     destination_hash::String
 end
@@ -147,8 +147,8 @@ queue.progress = (queue.member_count - queue.remaining) / queue.member_count
 ````
 """
 mutable struct TransferQueue
-    files::Vector{TransferFile}
-    member_count::Int
+    const files::Vector{TransferFile}
+    const member_count::Int
     remaining::Int
     progress::Float32
 end
@@ -482,7 +482,7 @@ function oversee_transfers(
     """
 
     # run as many transfers as there are CPU cores available to the Julia runtime
-    @threads for file in queue.files
+    @showprogress @threads for file in queue.files
 
         # TODO
         # this will probably cause a data race but oh well

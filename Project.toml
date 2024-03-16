@@ -4,7 +4,6 @@ authors = ["Nicholas Minor <nrminor@wisc.edu>"]
 version = "0.1.0"
 
 [deps]
-AbbreviatedStackTraces = "ac637c84-cc71-43bf-9c33-c1b4316be3d4"
 ArgParse = "c7e460c6-2fb9-53a9-8c5b-16f535851c63"
 Chairmarks = "0ca39b1e-fe0b-4e98-acfc-b1656634c4de"
 DaemonMode = "d749ddd5-2b29-4920-8305-6ff5a704e36e"
@@ -19,6 +18,6 @@ Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
 MD5 = "6ac74813-4b46-53a4-afec-0b5dc9d7885c"
 Pipe = "b98c9c47-44ae-5843-9183-064241ee97a0"
 Pluto = "c3e4b0f8-55cb-11ea-2926-15256bba5781"
-ProgressLogging = "33c8b6b6-d38a-422a-b730-caa89a2f386c"
+ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
 Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
 YAML = "ddb6d928-2868-570f-bddf-ab3f9cf99eb6"
