@@ -2,6 +2,7 @@
 
 module TractorBeam
 
+using AbbreviatedStackTraces
 using Base.Iterators
 using Base.Threads: @threads
 using Logging

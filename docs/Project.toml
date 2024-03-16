@@ -1,6 +1,8 @@
 [deps]
+AbbreviatedStackTraces = "ac637c84-cc71-43bf-9c33-c1b4316be3d4"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 DocumenterLaTeX = "cd674d7a-5f81-5cf3-af33-235ef1834b99"
+DocumenterMarkdown = "997ab1e6-3595-5248-9280-8efb232c3433"
 Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
 MD5 = "6ac74813-4b46-53a4-afec-0b5dc9d7885c"
 Pipe = "b98c9c47-44ae-5843-9183-064241ee97a0"
