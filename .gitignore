@@ -1,6 +1,8 @@
 .vscode/
 .ssh/
 results/
+input/
+data/
 
 Manifest.toml
 *_rsa*
